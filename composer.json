@@ -1,0 +1,19 @@
+{
+    "name": "kharlan/newcomertasks",
+    "authors": [
+        {
+            "name": "Kosta Harlan",
+            "email": "kharlan@wikimedia.org"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    },
+    "require": {
+        "symfony/console": "^4.3",
+        "guzzlehttp/guzzle": "~6.0",
+		"ext-json": "*"
+	}
+}
