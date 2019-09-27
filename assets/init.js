@@ -159,16 +159,20 @@ $( function () {
 			return;
 		}
 		hasTemplate.forEach( function ( templateGroup ) {
-			$.get( '/assets/tasks.json', function ( response ) {
-				response.forEach( function ( task ) {
+			oboe( '/assets/tasks.json' )
+				.node( '{lang}', function ( task ) {
+					var taskTopics = JSON.parse( task.topic );
 					if ( task.lang !== lang ) {
 						return;
 					}
 					if ( topics.length ) {
-						if ( topics.includes( task.topic ) &&
-							templateGroup.includes( task.template ) ) {
-							appendResultsToTaskOptions( task, task.template );
+						for ( var topic in taskTopics ) {
+							if ( topics.includes( topic ) &&
+								templateGroup.includes( task.template ) ) {
+								appendResultsToTaskOptions( task, task.template );
+							}
 						}
+
 					} else {
 						// Template only search.
 						if ( templateGroup.includes( task.template ) ) {
@@ -176,7 +180,12 @@ $( function () {
 						}
 					}
 				} );
-			} );
+				// .done( function ( response ) {
+				// 	console.log( response );
+				// 	response.forEach( function ( task ) {
+
+				// 	} );
+				// } );
 		} );
 	}
 
