@@ -1,3 +1,4 @@
 vendor
 .idea
-*.json
+node_modules
+assets/*.json

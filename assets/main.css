@@ -1,0 +1,44 @@
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Lato', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+    font-size: 0.875em;
+}
+
+.wrapper {
+    width: 60%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.task-type {
+    padding: 20px 0;
+}
+
+.newcomer-tasks .oo-ui-optionWidget {
+    border-bottom: 1px solid #666;
+    padding: 10px 0;
+}
+
+.oo-ui-selectWidget-unpressed .oo-ui-optionWidget-selected {
+    background-color: #80ccff;
+}
+
+.oo-ui-optionWidget-highlighted {
+    background-color: #b9e3ff;
+}
+
+.oo-ui-inputWidget {
+    margin-bottom: 0.5em;
+}
+
+.newcomer-tasks .oo-ui-labelElement-label {
+    margin-left: 0.25em;
+}
+
+.oo-ui-labelElement .oo-ui-optionWidget {
+    padding: 0.25em;
+}
+
+.oo-ui-fieldsetLayout {
+    background-color: lightgrey;
+    padding: 20px;
+}
