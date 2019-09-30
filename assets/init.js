@@ -1,7 +1,12 @@
 $( function () {
 	var taskTypeTemplateMapping = {},
 		lang = $( 'html' ).attr( 'lang' ),
+		maxResultsInUi = 100,
+		itemQueue = [],
 		topics = [],
+		useOnlyBestTopicWidget = new OO.ui.ToggleSwitchWidget( {
+			default: false
+		} ),
 		resetButton = new OO.ui.ButtonWidget( {
 			label: 'Reset',
 			flags: [
@@ -93,7 +98,7 @@ $( function () {
 					content: [
 						new OO.ui.HorizontalLayout( {
 							items: [
-								langSelectWidget, topicWidget, taskTypeWidget
+								langSelectWidget, topicWidget, taskTypeWidget, useOnlyBestTopicWidget
 							]
 						} )
 					]
@@ -124,17 +129,21 @@ $( function () {
 	}
 
 	function appendResultsToTaskOptions( result, template ) {
+		var taskOption;
 		if ( list.findItemFromData( result ) === null ) {
 			resultCount += 1;
 			$wrapper.find( '.result-count' )
 				.text( resultCount + ' results found' );
-			list.addItems( [
-				new TaskOptionWidget( {
-					data: result,
-					template: template,
-					label: result.page_title
-				} )
-			] );
+			taskOption = new TaskOptionWidget({
+				data: result,
+				template: template,
+				label: result.page_title
+			});
+			if ( resultCount < maxResultsInUi ) {
+				list.addItems( [ taskOption ] );
+			} else {
+				itemQueue.push( taskOption );
+			}
 		}
 	}
 
@@ -161,18 +170,37 @@ $( function () {
 		hasTemplate.forEach( function ( templateGroup ) {
 			oboe( '/assets/tasks.json' )
 				.node( '{lang}', function ( task ) {
-					var taskTopics = JSON.parse( task.topic );
+					var taskTopics = JSON.parse( task.topic ) || {},
+						topic,
+						topicNames = [],
+						sortedTopics = [];
 					if ( task.lang !== lang ) {
 						return;
 					}
+					for ( topic in taskTopics ) {
+						sortedTopics.push( [ topic, taskTopics[ topic ] ] );
+					}
+					sortedTopics.sort( function( a, b) {
+						return a[1] - b[1];
+					} );
+
+					sortedTopics.forEach( function( item ) {
+						topicNames.push( item[0] )
+					} );
+
+					if ( useOnlyBestTopicWidget.getValue() ) {
+						topicNames = topicNames.slice(-1);
+					}
+
+
+
 					if ( topics.length ) {
-						for ( var topic in taskTopics ) {
-							if ( topics.includes( topic ) &&
+						topics.forEach( function ( uiTopic ) {
+							if ( topicNames.includes( uiTopic ) &&
 								templateGroup.includes( task.template ) ) {
 								appendResultsToTaskOptions( task, task.template );
 							}
-						}
-
+						} );
 					} else {
 						// Template only search.
 						if ( templateGroup.includes( task.template ) ) {
@@ -180,12 +208,6 @@ $( function () {
 						}
 					}
 				} );
-				// .done( function ( response ) {
-				// 	console.log( response );
-				// 	response.forEach( function ( task ) {
-
-				// 	} );
-				// } );
 		} );
 	}
 
