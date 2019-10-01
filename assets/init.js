@@ -99,12 +99,15 @@ $( function () {
 					content: [
 						new OO.ui.HorizontalLayout( {
 							items: [
-								langSelectWidget, topicWidget, taskTypeWidget, useOnlyBestTopicWidget
+								langSelectWidget, topicWidget, taskTypeWidget
 							]
 						} )
 					]
 				} )
 			),
+			new OO.ui.FieldLayout( useOnlyBestTopicWidget, {
+				label: 'Only return article when topic is top-ranked match from ORES'
+			} ),
 			new OO.ui.FieldLayout(
 				new OO.ui.Widget( {
 					content: [
