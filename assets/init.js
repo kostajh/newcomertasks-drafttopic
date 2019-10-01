@@ -1,6 +1,7 @@
 $( function () {
 	var taskTypeTemplateMapping = {},
 		lang = $( 'html' ).attr( 'lang' ),
+		allTasks = [],
 		maxResultsInUi = 100,
 		itemQueue = [],
 		topics = [],
@@ -168,15 +169,12 @@ $( function () {
 			return;
 		}
 		hasTemplate.forEach( function ( templateGroup ) {
-			oboe( '/assets/tasks.json' )
-				.node( '{lang}', function ( task ) {
+			allTasks.forEach( function ( task ) {
+				setTimeout( function () {
 					var taskTopics = JSON.parse( task.topic ) || {},
 						topic,
 						topicNames = [],
 						sortedTopics = [];
-					if ( task.lang !== lang ) {
-						return;
-					}
 					for ( topic in taskTopics ) {
 						sortedTopics.push( [ topic, taskTopics[ topic ] ] );
 					}
@@ -192,8 +190,6 @@ $( function () {
 						topicNames = topicNames.slice(-1);
 					}
 
-
-
 					if ( topics.length ) {
 						topics.forEach( function ( uiTopic ) {
 							if ( topicNames.includes( uiTopic ) &&
@@ -207,7 +203,8 @@ $( function () {
 							appendResultsToTaskOptions( task, task.template );
 						}
 					}
-				} );
+				}, 200 );
+			} );
 		} );
 	}
 
@@ -288,6 +285,17 @@ $( function () {
 		} );
 	} );
 
+	function downloadTasks() {
+		oboe( '/assets/tasks.json' )
+			.node( '{lang}', function ( task ) {
+				setTimeout( function () {
+					if ( task.lang === lang ) {
+						allTasks.push( task );
+					}
+				}, 100 );
+			} );
+	}
+
 	langSelectWidget.on( 'select', function ( item ) {
 		if ( !item ) {
 			return;
@@ -299,6 +307,7 @@ $( function () {
 		getTopics();
 		topicWidget.setDisabled( false );
 		getTemplatesForLang( lang );
+		downloadTasks();
 	} );
 
 	$wrapper.append(
