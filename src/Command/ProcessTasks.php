@@ -15,12 +15,14 @@ class ProcessTasks extends Command {
 		$this->addOption( 'lang', null, InputOption::VALUE_REQUIRED );
 		$this->addOption( 'overwrite', null, InputOption::VALUE_OPTIONAL, '', false );
 		$this->addOption( 'limit', null, InputOption::VALUE_OPTIONAL, '', 25 );
+		$this->addOption( 'groupname', null, InputOption::VALUE_OPTIONAL, '', '' );
 		$this->addOption( 'template-source', null, InputOption::VALUE_OPTIONAL, '', 'Growth/Personalized_first_day/Newcomer_tasks/Prototype/templates' );
 	}
 
 	protected function execute( InputInterface $input, OutputInterface $output ) {
 
 		$lang = $input->getOption( 'lang' );
+		$templateGroupName = $input->getOption( 'groupname' );
 		$baseUri = sprintf( 'https://%s.wikipedia.org/w/api.php', $lang);
 		$client = new Client( [
 			'base_uri' => $baseUri
@@ -38,6 +40,9 @@ class ProcessTasks extends Command {
 		] )->getBody()->getContents(), true );
 		$templateGroups = json_decode( $templates['query']['pages'][0]['revisions'][0]['slots']['main']['content'], true );
 		foreach( $templateGroups as $groupName => $group ) {
+			if ( $templateGroupName  && $groupName !== $templateGroupName ) {
+				continue;
+			}
 			$output->writeln( sprintf( '<info>Analyzing %s</info>', $groupName ) );
 			foreach ( $group['templates'] as $template ) {
 				$output->writeln( '<info>' . $template . '</info>' );
