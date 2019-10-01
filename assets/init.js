@@ -106,7 +106,7 @@ $( function () {
 				} )
 			),
 			new OO.ui.FieldLayout( useOnlyBestTopicWidget, {
-				label: 'Only return article when topic is top-ranked match from ORES'
+				label: 'Only return article when topic is top-ranked match from ORES (does not do anything if no topics are selected)'
 			} ),
 			new OO.ui.FieldLayout(
 				new OO.ui.Widget( {
