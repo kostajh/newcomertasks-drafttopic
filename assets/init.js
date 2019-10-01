@@ -156,7 +156,9 @@ $( function () {
 		list.clearItems();
 		list.toggle( true );
 		resultCount = 0;
-		$wrapper.find( '.result-count' ).toggle( true );
+		$wrapper.find( '.result-count' )
+			.text( resultCount + ' results found' )
+			.toggle( true );
 		hasTemplate = [];
 		topics = [];
 
@@ -171,6 +173,7 @@ $( function () {
 		if ( !hasTemplate.length ) {
 			return;
 		}
+
 		hasTemplate.forEach( function ( templateGroup ) {
 			allTasks.forEach( function ( task ) {
 				setTimeout( function () {
