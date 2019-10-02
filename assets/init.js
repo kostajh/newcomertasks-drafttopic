@@ -122,7 +122,7 @@ $( function () {
 	function getTopics() {
 		topicWidget.clearItems();
 		topicWidget.getMenu().clearItems();
-		$.get( '/assets/topics.json', function ( response ) {
+		$.get( '/assets/topics.' + lang + '.json', function ( response ) {
 			response.forEach( function ( topic ) {
 				topicWidget.addOptions( [
 					topicWidget.createMenuOptionWidget( topic, topic )
@@ -292,7 +292,7 @@ $( function () {
 	} );
 
 	function downloadTasks() {
-		oboe( '/assets/tasks.json' )
+		oboe( '/assets/tasks.' + lang + '.json' )
 			.node( '{lang}', function ( task ) {
 				setTimeout( function () {
 					if ( task.lang === lang ) {
