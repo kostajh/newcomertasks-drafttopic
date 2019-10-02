@@ -15,7 +15,7 @@ class Export extends Command {
 	protected function execute( InputInterface $input, OutputInterface $output ) {
 		$pdo = new \PDO( 'mysql:dbname=tasks;host=127.0.0.1', 'root' );
 		foreach ( [ 'cs', 'ko', 'ar' ] as $lang ) {
-			$query = $pdo->prepare( 'SELECT * FROM task WHERE lang = :lang AND topic NOT LIKE "[]"' );
+			$query = $pdo->prepare( 'SELECT * FROM task WHERE lang = :lang' );
 			$query->bindParam( ':lang', $lang );
 			$query->execute();
 			$results = $query->fetchAll( \PDO::FETCH_ASSOC );
