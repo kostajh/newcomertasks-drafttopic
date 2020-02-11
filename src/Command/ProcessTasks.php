@@ -16,7 +16,7 @@ class ProcessTasks extends Command {
 		$this->addOption( 'overwrite', null, InputOption::VALUE_OPTIONAL, '', false );
 		$this->addOption( 'limit', null, InputOption::VALUE_OPTIONAL, '', 25 );
 		$this->addOption( 'groupname', null, InputOption::VALUE_OPTIONAL, '', '' );
-		$this->addOption( 'template-source', null, InputOption::VALUE_OPTIONAL, '', 'Growth/Personalized_first_day/Newcomer_tasks/Prototype/templates' );
+		$this->addOption( 'template-source', null, InputOption::VALUE_OPTIONAL, '', 'MediaWiki:NewcomerTasks.json' );
 	}
 
 	protected function execute( InputInterface $input, OutputInterface $output ) {
@@ -27,11 +27,11 @@ class ProcessTasks extends Command {
 		$client = new Client( [
 			'base_uri' => $baseUri
 		] );
-		$templates = json_decode( $client->request( 'GET', 'https://www.mediawiki.org/w/api.php', [
+		$templates = json_decode( $client->request( 'GET', $baseUri, [
 			'query' => [
 				'action' => 'query',
 				'prop' => 'revisions',
-				'titles' => sprintf( '%s/%s.json', $input->getOption( 'template-source' ), $lang ),
+				'titles' => $input->getOption( 'template-source' ),
 				'format' => 'json',
 				'formatversion' => 2,
 				'rvprop' => 'content',
@@ -52,12 +52,9 @@ class ProcessTasks extends Command {
 						'action' => 'query',
 						'format' => 'json',
 						'formatversion' => 2,
-						'prop' => 'langlinks|pageprops',
-						'list' => '',
+						'prop' => 'revisions',
 						'generator' => 'search',
-						'llprop' => '',
-						'lllang' => 'en',
-						'lllimit' => $limit,
+						'rvprop' => 'ids',
 						'gsrsearch' => 'hastemplate:"' . $template . '"',
 						'gsrlimit' => $limit,
 					]
@@ -75,99 +72,24 @@ class ProcessTasks extends Command {
 						 ) ) {
 						continue;
 					}
-					$category_derived = 0;
-					$wikibaseItem = null;
-					$enwiki_title = $item['langlinks'][0]['title'] ?? null;
-					$title = $item['title'];
-					if ( !$enwiki_title ) {
-						// Try to get the title from the wikibase ID, if we have it.
-						$wikibaseItem = $item['pageprops']['wikibase_item'] ?? null;
-						if ( !$wikibaseItem ) {
-							$output->writeln( '<error>No langlinks or wikibase item for </error>' .
-											  json_encode(
-												  $item ) );
-							$this->writeDb(
-								$title ,
-								'',
-								0,
-								0,
-								'',
-								'[]',
-								$template,
-								$lang
-							);
-							continue;
-						}
-						$wikibaseResponse = json_decode( $client->request( 'GET', 'https://www.wikidata.org/w/api.php',
-							[ 'query' => [
-								'action' => 'wbgetentities',
-								'format' => 'json',
-								'formatversion' => 2,
-								'ids' => $wikibaseItem,
-								'sites' => 'enwiki',
-								'props' => 'labels',
-								'languages' => 'en',
-								'normalize' => 1
-							] ] )->getBody()->getContents(), true );
-						$enwiki_title = $wikibaseResponse['entities'][$wikibaseItem]['labels']['en']['value'] ?? null;
-						if ( !$enwiki_title ) {
-							$this->writeDb(
-								$title,
-								$enwiki_title,
-								0,
-								0,
-								$wikibaseItem,
-								'[]',
-								$template,
-								$lang
-							);
-							$output->writeln( '<error>Could not find title from wikibase item for</error> ' .
-											  json_encode( $item ) );
-							continue;
-						}
-					}
-					$enWikiResponse = $client->request( 'GET', 'https://en.wikipedia.org/w/api.php',
-						[
-							'query' => [
-								'action' => 'query',
-								'format' => 'json',
-								'formatversion' => 2,
-								'prop' => 'revisions',
-								'titles' => $enwiki_title,
-							]
-						] );
-					$enWikiResponse = json_decode( $enWikiResponse->getBody()->getContents(), true );
-					$revId = $enWikiResponse['query']['pages'][0]['revisions'][0]['revid'] ?? 0;
-					if ( !$revId ) {
-						$this->writeDb(
-							$title,
-							$enwiki_title,
-							0,
-							$revId,
-							$wikibaseItem,
-							'[]',
-							$template,
-							$lang
-						);
-						$output->writeln( '<error>No rev ID found for ' . $title . ' (' . $enwiki_title .
-										  ')</error>' );
-						continue;
-					}
+					$revId = $item['revisions'][0]['revid'];
 					$oresResponse = json_decode( $client->request( 'GET',
-						sprintf( 'https://ores.wikimedia.org/v3/scores/enwiki/%d/drafttopic', $revId )
+						sprintf( 'https://ores.wikimedia.org/v3/scores/%swiki/%d/articletopic',
+							$lang, $revId )
 					)->getBody()->getContents(), true );
-					$topics = $this->extractTopics( $oresResponse['enwiki']['scores'][$revId]['drafttopic']['score'] ?? [] );
+					$topics = $this->extractTopics( $oresResponse[$lang .
+						'wiki']['scores'][$revId]['articletopic']['score'] ?? [] );
 					$this->writeDb(
-						$title,
-						$enwiki_title,
-						$category_derived,
+						$item['title'],
+						'',
+						0,
 						$revId,
-						$wikibaseItem,
+						'',
 						$topics,
 						$template,
 						$lang
 					);
-					$output->writeln( sprintf( '<info>%s (%s): %s</info>', $title, $enwiki_title,
+					$output->writeln( sprintf( '<info>%s: %s</info>', $item['title'],
 						$topics ) );
 				}
 			}
