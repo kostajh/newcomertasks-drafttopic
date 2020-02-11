@@ -1,9 +1,19 @@
-# Drafttopic ORES data generator
+# articletopic ORES prototype
+
+Start a MySQL container:
+
+```
+docker run --name newcomer-tasks-db -v $(pwd)/data:/var/lib/mysql -p 3306:3306 -e MYSQL_ALLOW_EMPTY_PASSWORD=1 -d mariadb
+```
+
+In the container, create the database:
+
+`CREATE database tasks`
 
 Create the table:
 
 ``` mysql
-Create Table: CREATE TABLE `task` (
+CREATE TABLE `task` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `page_title` varchar(256) DEFAULT NULL,
   `topic` json DEFAULT NULL,
