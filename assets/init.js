@@ -257,8 +257,8 @@ $( function () {
 
 	function getTemplatesForLang( lang ) {
 		taskTypeWidget.clearItems();
-		$.get( 'https://www.mediawiki.org/w/api.php', {
-			titles: 'Growth/Personalized_first_day/Newcomer_tasks/Prototype/templates/' + lang + '.json',
+		$.get( 'https://' + lang + '.wikipedia.org/w/api.php', {
+			titles: 'MediaWiki:NewcomerTasks.json',
 			action: 'query',
 			prop: 'revisions',
 			rvprop: 'content',
@@ -275,7 +275,7 @@ $( function () {
 			for ( key in templates ) {
 				taskTypeWidget.addItems( [ new OO.ui.CheckboxMultioptionWidget( {
 					data: templates[ key ].templates,
-					label: templates[ key ].label
+					label: key
 				} ) ] );
 				taskTypeTemplateMapping[ key ] = templates[ key ];
 			}
