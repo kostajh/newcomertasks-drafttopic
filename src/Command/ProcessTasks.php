@@ -52,7 +52,11 @@ class ProcessTasks extends Command {
 						'action' => 'query',
 						'format' => 'json',
 						'formatversion' => 2,
-						'prop' => 'revisions',
+						'list' => '',
+						'prop' => 'revisions|langlinks|pageprops',
+						'llprop' => '',
+						'lllang' => 'en',
+						'lllimit' => $limit,
 						'generator' => 'search',
 						'rvprop' => 'ids',
 						'gsrsearch' => 'hastemplate:"' . $template . '"',
@@ -72,6 +76,8 @@ class ProcessTasks extends Command {
 						 ) ) {
 						continue;
 					}
+					// Get native model data.
+					$is_foreignwiki = 0;
 					$revId = $item['revisions'][0]['revid'];
 					$oresResponse = json_decode( $client->request( 'GET',
 						sprintf( 'https://ores.wikimedia.org/v3/scores/%swiki/%d/articletopic',
@@ -82,7 +88,7 @@ class ProcessTasks extends Command {
 					$this->writeDb(
 						$item['title'],
 						'',
-						0,
+						$is_foreignwiki,
 						$revId,
 						'',
 						$topics,
@@ -91,6 +97,101 @@ class ProcessTasks extends Command {
 					);
 					$output->writeln( sprintf( '<info>%s: %s</info>', $item['title'],
 						$topics ) );
+					// Get foreign model data.
+					$is_foreignwiki = 1;
+
+					$wikibaseItem = null;
+					$enwiki_title = $item['langlinks'][0]['title'] ?? null;
+					$title = $item['title'];
+					if ( !$enwiki_title ) {
+						// Try to get the title from the wikibase ID, if we have it.
+						$wikibaseItem = $item['pageprops']['wikibase_item'] ?? null;
+						if ( !$wikibaseItem ) {
+							$output->writeln( '<error>No langlinks or wikibase item for </error>' .
+								json_encode(
+									$item ) );
+							$this->writeDb(
+								$title ,
+								'',
+								0,
+								0,
+								'',
+								'[]',
+								$template,
+								$lang
+							);
+							continue;
+						}
+						$wikibaseResponse = json_decode( $client->request( 'GET', 'https://www.wikidata.org/w/api.php',
+							[ 'query' => [
+								'action' => 'wbgetentities',
+								'format' => 'json',
+								'formatversion' => 2,
+								'ids' => $wikibaseItem,
+								'sites' => 'enwiki',
+								'props' => 'labels',
+								'languages' => 'en',
+								'normalize' => 1
+							] ] )->getBody()->getContents(), true );
+						$enwiki_title = $wikibaseResponse['entities'][$wikibaseItem]['labels']['en']['value'] ?? null;
+						if ( !$enwiki_title ) {
+							$this->writeDb(
+								$title,
+								$enwiki_title,
+								$is_foreignwiki,
+								0,
+								$wikibaseItem,
+								'[]',
+								$template,
+								$lang
+							);
+							$output->writeln( '<error>Could not find title from wikibase item for</error> ' .
+								json_encode( $item ) );
+							continue;
+						}
+					}
+					$enWikiResponse = $client->request( 'GET', 'https://en.wikipedia.org/w/api.php',
+						[
+							'query' => [
+								'action' => 'query',
+								'format' => 'json',
+								'formatversion' => 2,
+								'prop' => 'revisions',
+								'titles' => $enwiki_title,
+							]
+						] );
+					$enWikiResponse = json_decode( $enWikiResponse->getBody()->getContents(), true );
+					$revId = $enWikiResponse['query']['pages'][0]['revisions'][0]['revid'] ?? 0;
+
+					if ( !$revId ) {
+						$this->writeDb(
+							$title,
+							$enwiki_title,
+							$is_foreignwiki,
+							$revId,
+							$wikibaseItem,
+							'[]',
+							$template,
+							$lang
+						);
+						$output->writeln( '<error>No rev ID found for ' . $title . ' (' . $enwiki_title .
+							')</error>' );
+						continue;
+					}
+					$oresResponse = json_decode( $client->request( 'GET',
+						sprintf( 'https://ores.wikimedia.org/v3/scores/enwiki/%d/articletopic', $revId )
+					)->getBody()->getContents(), true );
+					$topics = $this->extractTopics( $oresResponse['enwiki']['scores'][$revId]['articletopic']['score'] ?? [] );
+					$this->writeDb(
+						$title,
+						$enwiki_title,
+						$is_foreignwiki,
+						$revId,
+						$wikibaseItem,
+						$topics,
+						$template,
+						$lang
+					);
 				}
 			}
 		}
@@ -125,20 +226,20 @@ class ProcessTasks extends Command {
 	}
 
 	private function writeDb(
-		$title, $enwiki_title = '', $category_derived = 0, $revId = 0,
+		$title, $enwiki_title = '', $is_foreignwiki = 0, $revId = 0,
 		$wikibaseItem = '', $topics = '[]', $template = '', $lang = ''
 	) {
 		$pdo = new \PDO( 'mysql:dbname=tasks;host=127.0.0.1', 'root' );
 		$statement = $pdo->prepare(
 			'INSERT INTO ' .
-			'task ( page_title, topic, template, enwiki_title, category_derived, rev_id, wikibase_id, lang ) ' .
-			'VALUES ( :page_title, :topic, :template, :enwiki_title, :category_derived, :rev_id, :wikibase_id, :lang )'
+			'task ( page_title, topic, template, enwiki_title, is_foreignwiki, rev_id, wikibase_id, lang ) ' .
+			'VALUES ( :page_title, :topic, :template, :enwiki_title, :is_foreignwiki, :rev_id, :wikibase_id, :lang )'
 		);
 		$trimmedTitle = substr( $title, 0, 255 );
 		$statement->bindParam( ':page_title', $trimmedTitle );
 		$trimmedEnwikiTitle = substr( $enwiki_title, 0, 255 );
 		$statement->bindParam( ':enwiki_title', $trimmedEnwikiTitle );
-		$statement->bindParam( ':category_derived', $category_derived );
+		$statement->bindParam( ':is_foreignwiki', $is_foreignwiki);
 		$statement->bindParam( ':wikibase_id', $wikibaseItem );
 		$statement->bindParam( ':rev_id', $revId );
 		$statement->bindParam( ':topic', $topics );
