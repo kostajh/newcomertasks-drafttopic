@@ -8,6 +8,9 @@ $( function () {
 		useOnlyBestTopicWidget = new OO.ui.ToggleSwitchWidget( {
 			default: false
 		} ),
+		isForeignWikiWidget = new OO.ui.ToggleSwitchWidget( {
+			default: false
+		} ),
 		resetButton = new OO.ui.ButtonWidget( {
 			label: 'Reset',
 			flags: [
@@ -108,6 +111,9 @@ $( function () {
 			new OO.ui.FieldLayout( useOnlyBestTopicWidget, {
 				label: 'Only return article when topic is top-ranked match from ORES (does not do anything if no topics are selected)'
 			} ),
+			new OO.ui.FieldLayout( isForeignWikiWidget, {
+				label: 'Only get tasks with topics returned from enwiki ORES, ignore local wiki ORES models.'
+			} ),
 			new OO.ui.FieldLayout(
 				new OO.ui.Widget( {
 					content: [
@@ -134,6 +140,12 @@ $( function () {
 
 	function appendResultsToTaskOptions( result, template ) {
 		var taskOption;
+		if ( isForeignWikiWidget.getValue() && parseInt( result.is_foreignwiki ) === 0 ) {
+			return;
+		}
+		if ( !isForeignWikiWidget.getValue() && parseInt( result.is_foreignwiki ) === 1) {
+			return;
+		}
 		if ( list.findItemFromData( result ) === null ) {
 			resultCount += 1;
 			$wrapper.find( '.result-count' )
