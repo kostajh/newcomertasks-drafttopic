@@ -206,7 +206,7 @@ class ProcessTasks extends Command {
 
 	private function extractTopics( array $predictions, array $thresholds ) {
 		$probability = $predictions['probability'];
-		$results = [];
+		arsort( $probability );
 		$results = array_filter( $probability, function ($result, $key ) use ( $thresholds ) {
 			return $result > $thresholds[$key];
 		}, ARRAY_FILTER_USE_BOTH );
