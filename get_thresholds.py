@@ -12,6 +12,7 @@ Options:
 """
 import docopt
 import requests
+import json
 from tabulate import tabulate
 
 ORES_HOST = "https://ores.wikimedia.org"
@@ -25,15 +26,19 @@ def main(argv=None):
 
     wiki = args['<wiki>']
 
-    headers = [['label', 'pop rate', 'threshold', 'precision', 'recall']]
-
-    table_data = headers
+    table_data = []
     for label, pop_rate in get_labels(wiki, MODEL):
         threshold, precision, recall = get_best_threshold(wiki, label)
-        row = [label, pop_rate, threshold, precision, recall]
+        row = {
+            "label": label,
+            "pop_rate": pop_rate,
+            "threshold": threshold,
+            "precision": precision,
+            "recall": recall
+        }
         table_data.append(row)
 
-    print(tabulate(table_data))
+    print(json.dumps(table_data))
 
 
 def get_labels(wiki, model):
