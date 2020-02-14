@@ -27,6 +27,7 @@ class ProcessTasks extends Command {
 		$client = new Client( [
 			'base_uri' => $baseUri
 		] );
+		$thresholdDefinition = $this->getThresholdDefinition( $lang );
 		$templates = json_decode( $client->request( 'GET', $baseUri, [
 			'query' => [
 				'action' => 'query',
@@ -83,8 +84,10 @@ class ProcessTasks extends Command {
 						sprintf( 'https://ores.wikimedia.org/v3/scores/%swiki/%d/articletopic',
 							$lang, $revId )
 					)->getBody()->getContents(), true );
-					$topics = $this->extractTopics( $oresResponse[$lang .
-						'wiki']['scores'][$revId]['articletopic']['score'] ?? [] );
+					$topics = $this->extractTopics(
+						$oresResponse[$lang . 'wiki']['scores'][$revId]['articletopic']['score'] ?? [],
+						$thresholdDefinition
+					);
 					$this->writeDb(
 						$item['title'],
 						'',
@@ -181,7 +184,10 @@ class ProcessTasks extends Command {
 					$oresResponse = json_decode( $client->request( 'GET',
 						sprintf( 'https://ores.wikimedia.org/v3/scores/enwiki/%d/articletopic', $revId )
 					)->getBody()->getContents(), true );
-					$topics = $this->extractTopics( $oresResponse['enwiki']['scores'][$revId]['articletopic']['score'] ?? [] );
+					$topics = $this->extractTopics(
+						$oresResponse['enwiki']['scores'][$revId]['articletopic']['score'] ?? [],
+						$thresholdDefinition
+					);
 					$this->writeDb(
 						$title,
 						$enwiki_title,
@@ -198,14 +204,13 @@ class ProcessTasks extends Command {
 
 	}
 
-	private function extractTopics( array $predictions ) {
+	private function extractTopics( array $predictions, array $thresholds ) {
 		$probability = $predictions['probability'];
-		arsort( $probability );
-		$top_results = array_slice( $probability, 0, 3 );
-		array_filter( $top_results, function ( $result ) {
-			return $result > 0.05;
-		} );
-		return json_encode( $top_results );
+		$results = [];
+		$results = array_filter( $probability, function ($result, $key ) use ( $thresholds ) {
+			return $result > $thresholds[$key];
+		}, ARRAY_FILTER_USE_BOTH );
+		return json_encode( $results );
 	}
 
 	protected function executeQuery( Client $client, $baseUri, array $params, int $offset = 0,
@@ -263,5 +268,17 @@ class ProcessTasks extends Command {
 		}
 		$result = $query->fetch( \PDO::FETCH_ASSOC );
 		return isset( $result['id'] ) && $result['id'] > 0;
+	}
+
+	private function getThresholdDefinition( $lang ) {
+		$data = json_decode(
+			file_get_contents( 'assets/thresholds/' . $lang . 'wiki.json' ),
+			true
+		);
+		$definitions = [];
+		foreach ( $data as $row ) {
+			$definitions[$row['label']] = $row['threshold'];
+		}
+		return $definitions;
 	}
 }
