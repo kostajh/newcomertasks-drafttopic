@@ -156,7 +156,7 @@ $( function () {
 				label: result.page_title
 			});
 			if ( resultCount < maxResultsInUi ) {
-				list.addItems( [ taskOption ], Math.floor(Math.random() * list.getItems().length ) + 1 );
+				list.addItems( [ taskOption ], Math.floor(Math.random() * list.getItems().length ) );
 			} else {
 				itemQueue.push( taskOption );
 			}
