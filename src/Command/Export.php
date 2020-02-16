@@ -14,7 +14,7 @@ class Export extends Command {
 
 	protected function execute( InputInterface $input, OutputInterface $output ) {
 		$pdo = new \PDO( 'mysql:dbname=tasks;host=127.0.0.1', 'root' );
-		foreach ( [ 'cs', 'ko', 'ar' ] as $lang ) {
+		foreach ( [ 'cs', 'ko', 'ar', 'vi' ] as $lang ) {
 			$query = $pdo->prepare( 'SELECT * FROM task WHERE lang = :lang' );
 			$query->bindParam( ':lang', $lang );
 			$query->execute();
@@ -23,7 +23,7 @@ class Export extends Command {
 			file_put_contents( 'assets/tasks.' . $lang . '.json', $jsonEncoded );
 		}
 
-		foreach( [ 'cs', 'ko', 'ar' ] as $lang ) {
+		foreach( [ 'cs', 'ko', 'ar', 'vi' ] as $lang ) {
 			$topics = [];
 			$query = $pdo->prepare( 'SELECT DISTINCT(topic) FROM task WHERE topic NOT LIKE "[]" AND lang = :lang' );
 			$query->bindParam( ':lang', $lang );
