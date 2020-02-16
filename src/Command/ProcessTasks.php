@@ -241,6 +241,7 @@ class ProcessTasks extends Command {
 			'VALUES ( :page_title, :topic, :template, :enwiki_title, :is_foreignwiki, :rev_id, :wikibase_id, :lang )'
 		);
 		$trimmedTitle = substr( $title, 0, 255 );
+		$trimmedTemplate = substr( $template, 0, 19 );
 		$statement->bindParam( ':page_title', $trimmedTitle );
 		$trimmedEnwikiTitle = substr( $enwiki_title, 0, 255 );
 		$statement->bindParam( ':enwiki_title', $trimmedEnwikiTitle );
@@ -248,7 +249,7 @@ class ProcessTasks extends Command {
 		$statement->bindParam( ':wikibase_id', $wikibaseItem );
 		$statement->bindParam( ':rev_id', $revId );
 		$statement->bindParam( ':topic', $topics );
-		$statement->bindParam( ':template', $template );
+		$statement->bindParam( ':template', $trimmedTemplate );
 		$statement->bindParam( ':lang', $lang );
 		if ( !$statement->execute() ) {
 			var_dump( $statement->errorInfo() );
