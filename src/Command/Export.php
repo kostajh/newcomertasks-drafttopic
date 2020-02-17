@@ -14,16 +14,36 @@ class Export extends Command {
 
 	protected function execute( InputInterface $input, OutputInterface $output ) {
 		$pdo = new \PDO( 'mysql:dbname=tasks;host=127.0.0.1', 'root' );
-		foreach ( [ 'cs', 'ko', 'ar' ] as $lang ) {
+		$articlesBelowThreshold = 0;
+		$enwikiThresholds = json_decode(
+			file_get_contents( 'assets/thresholds/enwiki.json' ),
+			true
+		);
+		$processedThresholds = [];
+		foreach ( $enwikiThresholds as $threshold ) {
+			$processedThresholds[$threshold['label']] = $threshold['threshold'];
+		}
+		foreach ( [ 'cs', 'ko', 'ar', 'vi' ] as $lang ) {
 			$query = $pdo->prepare( 'SELECT * FROM task WHERE lang = :lang' );
 			$query->bindParam( ':lang', $lang );
 			$query->execute();
 			$results = $query->fetchAll( \PDO::FETCH_ASSOC );
-			$jsonEncoded = json_encode( $results, JSON_PRETTY_PRINT );
+			$resultsPostProcessed = [];
+			foreach ( $results as $result ) {
+				$topics = json_decode( $result['topic'], true );
+				if ( (int)$result['is_foreignwiki'] === 1 ) {
+					$topics = array_filter( $topics, function ( $result, $key ) use ( $processedThresholds ) {
+						return $result > $processedThresholds[$key];
+					}, ARRAY_FILTER_USE_BOTH );
+				}
+				$result['topic'] = json_encode( $topics );
+				$resultsPostProcessed[] = $result;
+			}
+			$jsonEncoded = json_encode( $resultsPostProcessed, JSON_PRETTY_PRINT );
 			file_put_contents( 'assets/tasks.' . $lang . '.json', $jsonEncoded );
 		}
 
-		foreach( [ 'cs', 'ko', 'ar' ] as $lang ) {
+		foreach( [ 'cs', 'ko', 'ar', 'vi' ] as $lang ) {
 			$topics = [];
 			$query = $pdo->prepare( 'SELECT DISTINCT(topic) FROM task WHERE topic NOT LIKE "[]" AND lang = :lang' );
 			$query->bindParam( ':lang', $lang );

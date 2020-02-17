@@ -1,0 +1,450 @@
+[
+  {
+    "label": "Culture.Biography.Biography*",
+    "pop_rate": 0.123,
+    "precision": 0.7,
+    "recall": 0.954,
+    "threshold": 0.193
+  },
+  {
+    "label": "Culture.Biography.Women",
+    "pop_rate": 0.015,
+    "precision": 0.5,
+    "recall": 0.788,
+    "threshold": 0.545
+  },
+  {
+    "label": "Culture.Food and drink",
+    "pop_rate": 0.002,
+    "precision": 0.7,
+    "recall": 0.679,
+    "threshold": 0.73
+  },
+  {
+    "label": "Culture.Internet culture",
+    "pop_rate": 0.004,
+    "precision": 0.7,
+    "recall": 0.757,
+    "threshold": 0.788
+  },
+  {
+    "label": "Culture.Linguistics",
+    "pop_rate": 0.007,
+    "precision": 0.7,
+    "recall": 0.81,
+    "threshold": 0.25
+  },
+  {
+    "label": "Culture.Literature",
+    "pop_rate": 0.016,
+    "precision": 0.7,
+    "recall": 0.752,
+    "threshold": 0.583
+  },
+  {
+    "label": "Culture.Media.Books",
+    "pop_rate": 0.004,
+    "precision": 0.7,
+    "recall": 0.763,
+    "threshold": 0.522
+  },
+  {
+    "label": "Culture.Media.Entertainment",
+    "pop_rate": 0.004,
+    "precision": 0.5,
+    "recall": 0.641,
+    "threshold": 0.557
+  },
+  {
+    "label": "Culture.Media.Films",
+    "pop_rate": 0.011,
+    "precision": 0.7,
+    "recall": 0.881,
+    "threshold": 0.334
+  },
+  {
+    "label": "Culture.Media.Media*",
+    "pop_rate": 0.059,
+    "precision": 0.7,
+    "recall": 0.873,
+    "threshold": 0.528
+  },
+  {
+    "label": "Culture.Media.Music",
+    "pop_rate": 0.024,
+    "precision": 0.7,
+    "recall": 0.95,
+    "threshold": 0.11
+  },
+  {
+    "label": "Culture.Media.Radio",
+    "pop_rate": 0.002,
+    "precision": 0.7,
+    "recall": 0.747,
+    "threshold": 0.202
+  },
+  {
+    "label": "Culture.Media.Software",
+    "pop_rate": 0.001,
+    "precision": 0.3,
+    "recall": 0.726,
+    "threshold": 0.76
+  },
+  {
+    "label": "Culture.Media.Television",
+    "pop_rate": 0.009,
+    "precision": 0.7,
+    "recall": 0.821,
+    "threshold": 0.382
+  },
+  {
+    "label": "Culture.Media.Video games",
+    "pop_rate": 0.003,
+    "precision": 0.7,
+    "recall": 0.957,
+    "threshold": 0.27
+  },
+  {
+    "label": "Culture.Performing arts",
+    "pop_rate": 0.003,
+    "precision": 0.7,
+    "recall": 0.597,
+    "threshold": 0.767
+  },
+  {
+    "label": "Culture.Philosophy and religion",
+    "pop_rate": 0.011,
+    "precision": 0.5,
+    "recall": 0.65,
+    "threshold": 0.394
+  },
+  {
+    "label": "Culture.Sports",
+    "pop_rate": 0.071,
+    "precision": 0.7,
+    "recall": 0.963,
+    "threshold": 0.028
+  },
+  {
+    "label": "Culture.Visual arts.Architecture",
+    "pop_rate": 0.011,
+    "precision": 0.7,
+    "recall": 0.804,
+    "threshold": 0.359
+  },
+  {
+    "label": "Culture.Visual arts.Comics and Anime",
+    "pop_rate": 0.002,
+    "precision": 0.7,
+    "recall": 0.898,
+    "threshold": 0.694
+  },
+  {
+    "label": "Culture.Visual arts.Fashion",
+    "pop_rate": 0.001,
+    "precision": 0.5,
+    "recall": 0.807,
+    "threshold": 0.713
+  },
+  {
+    "label": "Culture.Visual arts.Visual arts*",
+    "pop_rate": 0.018,
+    "precision": 0.7,
+    "recall": 0.807,
+    "threshold": 0.485
+  },
+  {
+    "label": "Geography.Geographical",
+    "pop_rate": 0.024,
+    "precision": 0.7,
+    "recall": 0.519,
+    "threshold": 0.661
+  },
+  {
+    "label": "Geography.Regions.Africa.Africa*",
+    "pop_rate": 0.008,
+    "precision": 0.7,
+    "recall": 0.614,
+    "threshold": 0.859
+  },
+  {
+    "label": "Geography.Regions.Africa.Central Africa",
+    "pop_rate": 0.0,
+    "precision": "< 0.15",
+    "recall": null,
+    "threshold": 0.9
+  },
+  {
+    "label": "Geography.Regions.Africa.Eastern Africa",
+    "pop_rate": 0.0,
+    "precision": 0.3,
+    "recall": 0.73,
+    "threshold": 0.346
+  },
+  {
+    "label": "Geography.Regions.Africa.Northern Africa",
+    "pop_rate": 0.001,
+    "precision": 0.5,
+    "recall": 0.502,
+    "threshold": 0.917
+  },
+  {
+    "label": "Geography.Regions.Africa.Southern Africa",
+    "pop_rate": 0.001,
+    "precision": 0.5,
+    "recall": 0.662,
+    "threshold": 0.67
+  },
+  {
+    "label": "Geography.Regions.Africa.Western Africa",
+    "pop_rate": 0.001,
+    "precision": 0.3,
+    "recall": 0.905,
+    "threshold": 0.154
+  },
+  {
+    "label": "Geography.Regions.Americas.Central America",
+    "pop_rate": 0.003,
+    "precision": 0.7,
+    "recall": 0.52,
+    "threshold": 0.833
+  },
+  {
+    "label": "Geography.Regions.Americas.North America",
+    "pop_rate": 0.064,
+    "precision": 0.7,
+    "recall": 0.812,
+    "threshold": 0.29
+  },
+  {
+    "label": "Geography.Regions.Americas.South America",
+    "pop_rate": 0.006,
+    "precision": 0.7,
+    "recall": 0.689,
+    "threshold": 0.746
+  },
+  {
+    "label": "Geography.Regions.Asia.Asia*",
+    "pop_rate": 0.046,
+    "precision": 0.7,
+    "recall": 0.794,
+    "threshold": 0.658
+  },
+  {
+    "label": "Geography.Regions.Asia.Central Asia",
+    "pop_rate": 0.001,
+    "precision": 0.5,
+    "recall": 0.785,
+    "threshold": 0.659
+  },
+  {
+    "label": "Geography.Regions.Asia.East Asia",
+    "pop_rate": 0.011,
+    "precision": 0.7,
+    "recall": 0.614,
+    "threshold": 0.875
+  },
+  {
+    "label": "Geography.Regions.Asia.North Asia",
+    "pop_rate": 0.001,
+    "precision": 0.3,
+    "recall": 0.584,
+    "threshold": 0.838
+  },
+  {
+    "label": "Geography.Regions.Asia.South Asia",
+    "pop_rate": 0.015,
+    "precision": 0.7,
+    "recall": 0.911,
+    "threshold": 0.103
+  },
+  {
+    "label": "Geography.Regions.Asia.Southeast Asia",
+    "pop_rate": 0.006,
+    "precision": 0.7,
+    "recall": 0.534,
+    "threshold": 0.89
+  },
+  {
+    "label": "Geography.Regions.Asia.West Asia",
+    "pop_rate": 0.011,
+    "precision": 0.7,
+    "recall": 0.894,
+    "threshold": 0.194
+  },
+  {
+    "label": "Geography.Regions.Europe.Eastern Europe",
+    "pop_rate": 0.013,
+    "precision": 0.7,
+    "recall": 0.834,
+    "threshold": 0.52
+  },
+  {
+    "label": "Geography.Regions.Europe.Europe*",
+    "pop_rate": 0.076,
+    "precision": 0.7,
+    "recall": 0.846,
+    "threshold": 0.434
+  },
+  {
+    "label": "Geography.Regions.Europe.Northern Europe",
+    "pop_rate": 0.031,
+    "precision": 0.7,
+    "recall": 0.809,
+    "threshold": 0.238
+  },
+  {
+    "label": "Geography.Regions.Europe.Southern Europe",
+    "pop_rate": 0.013,
+    "precision": 0.7,
+    "recall": 0.826,
+    "threshold": 0.319
+  },
+  {
+    "label": "Geography.Regions.Europe.Western Europe",
+    "pop_rate": 0.019,
+    "precision": 0.7,
+    "recall": 0.846,
+    "threshold": 0.304
+  },
+  {
+    "label": "Geography.Regions.Oceania",
+    "pop_rate": 0.015,
+    "precision": 0.7,
+    "recall": 0.812,
+    "threshold": 0.253
+  },
+  {
+    "label": "History and Society.Business and economics",
+    "pop_rate": 0.01,
+    "precision": 0.7,
+    "recall": 0.507,
+    "threshold": 0.719
+  },
+  {
+    "label": "History and Society.Education",
+    "pop_rate": 0.007,
+    "precision": 0.7,
+    "recall": 0.617,
+    "threshold": 0.497
+  },
+  {
+    "label": "History and Society.History",
+    "pop_rate": 0.011,
+    "precision": 0.3,
+    "recall": 0.662,
+    "threshold": 0.376
+  },
+  {
+    "label": "History and Society.Military and warfare",
+    "pop_rate": 0.014,
+    "precision": 0.7,
+    "recall": 0.719,
+    "threshold": 0.7
+  },
+  {
+    "label": "History and Society.Politics and government",
+    "pop_rate": 0.028,
+    "precision": 0.7,
+    "recall": 0.517,
+    "threshold": 0.591
+  },
+  {
+    "label": "History and Society.Society",
+    "pop_rate": 0.013,
+    "precision": 0.3,
+    "recall": 0.625,
+    "threshold": 0.368
+  },
+  {
+    "label": "History and Society.Transportation",
+    "pop_rate": 0.015,
+    "precision": 0.7,
+    "recall": 0.964,
+    "threshold": 0.09
+  },
+  {
+    "label": "STEM.Biology",
+    "pop_rate": 0.034,
+    "precision": 0.7,
+    "recall": 0.967,
+    "threshold": 0.094
+  },
+  {
+    "label": "STEM.Chemistry",
+    "pop_rate": 0.002,
+    "precision": 0.5,
+    "recall": 0.622,
+    "threshold": 0.829
+  },
+  {
+    "label": "STEM.Computing",
+    "pop_rate": 0.003,
+    "precision": 0.5,
+    "recall": 0.74,
+    "threshold": 0.752
+  },
+  {
+    "label": "STEM.Earth and environment",
+    "pop_rate": 0.005,
+    "precision": 0.7,
+    "recall": 0.652,
+    "threshold": 0.647
+  },
+  {
+    "label": "STEM.Engineering",
+    "pop_rate": 0.005,
+    "precision": 0.7,
+    "recall": 0.828,
+    "threshold": 0.582
+  },
+  {
+    "label": "STEM.Libraries & Information",
+    "pop_rate": 0.001,
+    "precision": 0.5,
+    "recall": 0.761,
+    "threshold": 0.612
+  },
+  {
+    "label": "STEM.Mathematics",
+    "pop_rate": 0.0,
+    "precision": 0.5,
+    "recall": 0.82,
+    "threshold": 0.779
+  },
+  {
+    "label": "STEM.Medicine & Health",
+    "pop_rate": 0.006,
+    "precision": 0.7,
+    "recall": 0.733,
+    "threshold": 0.635
+  },
+  {
+    "label": "STEM.Physics",
+    "pop_rate": 0.001,
+    "precision": 0.3,
+    "recall": 0.7,
+    "threshold": 0.72
+  },
+  {
+    "label": "STEM.STEM*",
+    "pop_rate": 0.069,
+    "precision": 0.7,
+    "recall": 0.937,
+    "threshold": 0.371
+  },
+  {
+    "label": "STEM.Space",
+    "pop_rate": 0.006,
+    "precision": 0.7,
+    "recall": 0.965,
+    "threshold": 0.055
+  },
+  {
+    "label": "STEM.Technology",
+    "pop_rate": 0.005,
+    "precision": 0.5,
+    "recall": 0.53,
+    "threshold": 0.842
+  }
+]

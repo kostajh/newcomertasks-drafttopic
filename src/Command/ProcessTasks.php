@@ -16,7 +16,7 @@ class ProcessTasks extends Command {
 		$this->addOption( 'overwrite', null, InputOption::VALUE_OPTIONAL, '', false );
 		$this->addOption( 'limit', null, InputOption::VALUE_OPTIONAL, '', 25 );
 		$this->addOption( 'groupname', null, InputOption::VALUE_OPTIONAL, '', '' );
-		$this->addOption( 'template-source', null, InputOption::VALUE_OPTIONAL, '', 'Growth/Personalized_first_day/Newcomer_tasks/Prototype/templates' );
+		$this->addOption( 'template-source', null, InputOption::VALUE_OPTIONAL, '', 'MediaWiki:NewcomerTasks.json' );
 	}
 
 	protected function execute( InputInterface $input, OutputInterface $output ) {
@@ -27,11 +27,13 @@ class ProcessTasks extends Command {
 		$client = new Client( [
 			'base_uri' => $baseUri
 		] );
-		$templates = json_decode( $client->request( 'GET', 'https://www.mediawiki.org/w/api.php', [
+		$thresholdDefinition = $this->getThresholdDefinition( $lang );
+		$enwikiThresholdDefinition = $this->getThresholdDefinition( 'en' );
+		$templates = json_decode( $client->request( 'GET', $baseUri, [
 			'query' => [
 				'action' => 'query',
 				'prop' => 'revisions',
-				'titles' => sprintf( '%s/%s.json', $input->getOption( 'template-source' ), $lang ),
+				'titles' => $input->getOption( 'template-source' ),
 				'format' => 'json',
 				'formatversion' => 2,
 				'rvprop' => 'content',
@@ -52,12 +54,13 @@ class ProcessTasks extends Command {
 						'action' => 'query',
 						'format' => 'json',
 						'formatversion' => 2,
-						'prop' => 'langlinks|pageprops',
 						'list' => '',
-						'generator' => 'search',
+						'prop' => 'revisions|langlinks|pageprops',
 						'llprop' => '',
 						'lllang' => 'en',
 						'lllimit' => $limit,
+						'generator' => 'search',
+						'rvprop' => 'ids',
 						'gsrsearch' => 'hastemplate:"' . $template . '"',
 						'gsrlimit' => $limit,
 					]
@@ -75,7 +78,32 @@ class ProcessTasks extends Command {
 						 ) ) {
 						continue;
 					}
-					$category_derived = 0;
+					// Get native model data.
+					$is_foreignwiki = 0;
+					$revId = $item['revisions'][0]['revid'];
+					$oresResponse = json_decode( $client->request( 'GET',
+						sprintf( 'https://ores.wikimedia.org/v3/scores/%swiki/%d/articletopic',
+							$lang, $revId )
+					)->getBody()->getContents(), true );
+					$topics = $this->extractTopics(
+						$oresResponse[$lang . 'wiki']['scores'][$revId]['articletopic']['score'] ?? [],
+						$thresholdDefinition
+					);
+					$this->writeDb(
+						$item['title'],
+						'',
+						$is_foreignwiki,
+						$revId,
+						'',
+						$topics,
+						$template,
+						$lang
+					);
+					$output->writeln( sprintf( '<info>%s: %s</info>', $item['title'],
+						$topics ) );
+					// Get foreign model data.
+					$is_foreignwiki = 1;
+
 					$wikibaseItem = null;
 					$enwiki_title = $item['langlinks'][0]['title'] ?? null;
 					$title = $item['title'];
@@ -84,8 +112,8 @@ class ProcessTasks extends Command {
 						$wikibaseItem = $item['pageprops']['wikibase_item'] ?? null;
 						if ( !$wikibaseItem ) {
 							$output->writeln( '<error>No langlinks or wikibase item for </error>' .
-											  json_encode(
-												  $item ) );
+								json_encode(
+									$item ) );
 							$this->writeDb(
 								$title ,
 								'',
@@ -114,7 +142,7 @@ class ProcessTasks extends Command {
 							$this->writeDb(
 								$title,
 								$enwiki_title,
-								0,
+								$is_foreignwiki,
 								0,
 								$wikibaseItem,
 								'[]',
@@ -122,7 +150,7 @@ class ProcessTasks extends Command {
 								$lang
 							);
 							$output->writeln( '<error>Could not find title from wikibase item for</error> ' .
-											  json_encode( $item ) );
+								json_encode( $item ) );
 							continue;
 						}
 					}
@@ -138,11 +166,12 @@ class ProcessTasks extends Command {
 						] );
 					$enWikiResponse = json_decode( $enWikiResponse->getBody()->getContents(), true );
 					$revId = $enWikiResponse['query']['pages'][0]['revisions'][0]['revid'] ?? 0;
+
 					if ( !$revId ) {
 						$this->writeDb(
 							$title,
 							$enwiki_title,
-							0,
+							$is_foreignwiki,
 							$revId,
 							$wikibaseItem,
 							'[]',
@@ -150,39 +179,39 @@ class ProcessTasks extends Command {
 							$lang
 						);
 						$output->writeln( '<error>No rev ID found for ' . $title . ' (' . $enwiki_title .
-										  ')</error>' );
+							')</error>' );
 						continue;
 					}
 					$oresResponse = json_decode( $client->request( 'GET',
-						sprintf( 'https://ores.wikimedia.org/v3/scores/enwiki/%d/drafttopic', $revId )
+						sprintf( 'https://ores.wikimedia.org/v3/scores/enwiki/%d/articletopic', $revId )
 					)->getBody()->getContents(), true );
-					$topics = $this->extractTopics( $oresResponse['enwiki']['scores'][$revId]['drafttopic']['score'] ?? [] );
+					$topics = $this->extractTopics(
+						$oresResponse['enwiki']['scores'][$revId]['articletopic']['score'] ?? [],
+						$enwikiThresholdDefinition
+					);
 					$this->writeDb(
 						$title,
 						$enwiki_title,
-						$category_derived,
+						$is_foreignwiki,
 						$revId,
 						$wikibaseItem,
 						$topics,
 						$template,
 						$lang
 					);
-					$output->writeln( sprintf( '<info>%s (%s): %s</info>', $title, $enwiki_title,
-						$topics ) );
 				}
 			}
 		}
 
 	}
 
-	private function extractTopics( array $predictions ) {
+	private function extractTopics( array $predictions, array $thresholds ) {
 		$probability = $predictions['probability'];
 		arsort( $probability );
-		$top_results = array_slice( $probability, 0, 3 );
-		array_filter( $top_results, function ( $result ) {
-			return $result > 0.05;
-		} );
-		return json_encode( $top_results );
+		$results = array_filter( $probability, function ($result, $key ) use ( $thresholds ) {
+			return $result > $thresholds[$key];
+		}, ARRAY_FILTER_USE_BOTH );
+		return json_encode( $results );
 	}
 
 	protected function executeQuery( Client $client, $baseUri, array $params, int $offset = 0,
@@ -203,24 +232,25 @@ class ProcessTasks extends Command {
 	}
 
 	private function writeDb(
-		$title, $enwiki_title = '', $category_derived = 0, $revId = 0,
+		$title, $enwiki_title = '', $is_foreignwiki = 0, $revId = 0,
 		$wikibaseItem = '', $topics = '[]', $template = '', $lang = ''
 	) {
 		$pdo = new \PDO( 'mysql:dbname=tasks;host=127.0.0.1', 'root' );
 		$statement = $pdo->prepare(
 			'INSERT INTO ' .
-			'task ( page_title, topic, template, enwiki_title, category_derived, rev_id, wikibase_id, lang ) ' .
-			'VALUES ( :page_title, :topic, :template, :enwiki_title, :category_derived, :rev_id, :wikibase_id, :lang )'
+			'task ( page_title, topic, template, enwiki_title, is_foreignwiki, rev_id, wikibase_id, lang ) ' .
+			'VALUES ( :page_title, :topic, :template, :enwiki_title, :is_foreignwiki, :rev_id, :wikibase_id, :lang )'
 		);
 		$trimmedTitle = substr( $title, 0, 255 );
+		$trimmedTemplate = substr( $template, 0, 19 );
 		$statement->bindParam( ':page_title', $trimmedTitle );
 		$trimmedEnwikiTitle = substr( $enwiki_title, 0, 255 );
 		$statement->bindParam( ':enwiki_title', $trimmedEnwikiTitle );
-		$statement->bindParam( ':category_derived', $category_derived );
+		$statement->bindParam( ':is_foreignwiki', $is_foreignwiki);
 		$statement->bindParam( ':wikibase_id', $wikibaseItem );
 		$statement->bindParam( ':rev_id', $revId );
 		$statement->bindParam( ':topic', $topics );
-		$statement->bindParam( ':template', $template );
+		$statement->bindParam( ':template', $trimmedTemplate );
 		$statement->bindParam( ':lang', $lang );
 		if ( !$statement->execute() ) {
 			var_dump( $statement->errorInfo() );
@@ -240,5 +270,17 @@ class ProcessTasks extends Command {
 		}
 		$result = $query->fetch( \PDO::FETCH_ASSOC );
 		return isset( $result['id'] ) && $result['id'] > 0;
+	}
+
+	private function getThresholdDefinition( $lang ) {
+		$data = json_decode(
+			file_get_contents( 'assets/thresholds/' . $lang . 'wiki.json' ),
+			true
+		);
+		$definitions = [];
+		foreach ( $data as $row ) {
+			$definitions[$row['label']] = $row['threshold'];
+		}
+		return $definitions;
 	}
 }
