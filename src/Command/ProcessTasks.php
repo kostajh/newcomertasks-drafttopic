@@ -28,6 +28,7 @@ class ProcessTasks extends Command {
 			'base_uri' => $baseUri
 		] );
 		$thresholdDefinition = $this->getThresholdDefinition( $lang );
+		$enwikiThresholdDefinition = $this->getThresholdDefinition( 'en' );
 		$templates = json_decode( $client->request( 'GET', $baseUri, [
 			'query' => [
 				'action' => 'query',
@@ -186,7 +187,7 @@ class ProcessTasks extends Command {
 					)->getBody()->getContents(), true );
 					$topics = $this->extractTopics(
 						$oresResponse['enwiki']['scores'][$revId]['articletopic']['score'] ?? [],
-						$thresholdDefinition
+						$enwikiThresholdDefinition
 					);
 					$this->writeDb(
 						$title,
